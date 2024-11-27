@@ -15,9 +15,9 @@ def execute_code_block(message_content: str) -> str:
     if code_block:
         try:
             result = executor.execute_code_blocks(code_block)
-            return f"Code executed successfully. Output:\n{result}"
+            return result
         except Exception as e:
-            return f"Error executing code: {str(e)}"
+            return str(e)
     return None
 
 
@@ -26,15 +26,15 @@ def create_coding_agent() -> AssistantAgent:
     agent = AssistantAgent(
         name="Coding Agent",
         system_message="You are a helpful AI assistant. "
-                       "You can write Python code, execute it, and iterate on it if needed. "
-                       "You can execute Python code by using the 'execute_python' tool. It will return the output of the code. "
-                       "Return Python code in a code block. "
-                       "Don't include any other text in your response. "
-                       "Return 'TERMINATE' when the task is done.",
+                       "You can write Python code, and iterate on it if needed. "
+        # "You can execute Python code by using the 'execute_python' tool. It will return the output of the code. "
+                       "All code must be formatted as a code block. "
+                       "Your task is done when the user can execute the code without errors and get the expected output."
+                       "Return 'TERMINATE' to end the conversation after the task is complete.",
         llm_config=LLM_CONFIG,
     )
 
-    agent.register_for_llm(name="execute_python", description="Execute Python.")(execute_code_block)
+    # agent.register_for_llm(name="execute_python", description="Execute Python.")(execute_code_block)
 
     return agent
 
@@ -67,7 +67,7 @@ def initiate_chat(user_proxy: UserProxyAgent, coding_agent: AssistantAgent):
     :param coding_agent: The assistant agent.
     """
     initial_message = {
-        "content": "Write a Python function that takes a list of numbers and returns the average of the numbers."
+        "content": "Write a Python function that takes a list of integers and returns the sum of the even numbers.",
     }
     # Start the chat loop
     user_proxy.initiate_chat(
